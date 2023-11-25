@@ -1,70 +1,67 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import "./App.css";
-import { questions } from "./db/questions";
+import { initialQuiz, quizReducer } from "./reducers/quiz-reducer";
 
 function App() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [score, setScore] = useState(0);
-  const [feedback, setIsFeedback] = useState("");
-  const [isShowFinalScore, setIsFinalScore] = useState(false);
+  const [quiz, setQuiz] = useReducer(quizReducer, initialQuiz);
 
   const handleAnswer = (e) => {
-    setUserAnswer(e.target.value);
+    setQuiz({ type: "SET_USER_ANSWER", payload: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (questions[currentQuestion].correctAnswer === userAnswer) {
-      setScore((prev) => prev + 1);
-      setIsFeedback("Correct");
+  const handleSubmit = () => {
+    if (
+      quiz.quizQuestions[quiz.currentQuestion].correctAnswer === quiz.userAnswer
+    ) {
+      setQuiz({ type: "UPDATE_SCORE" });
+      setQuiz({ type: "SET_FEEDBACK", payload: "Correct" });
     } else {
-      setIsFeedback("Incorrect");
+      setQuiz({ type: "SET_FEEDBACK", payload: "Incorrect" });
     }
 
-    if (currentQuestion + 1 < questions.length)
-      setCurrentQuestion((prev) => prev + 1);
-    else setIsFinalScore(true);
+    if (quiz.currentQuestion + 1 < quiz.quizQuestions.length) {
+      setQuiz({ type: "UPDATE_CURRENT_QUESTION" });
+    } else {
+      setQuiz({ type: "TOGGLE_IS_SHOW_FINAL_SCORE" });
+    }
   };
 
   const handleReset = () => {
-    setCurrentQuestion(0);
-    setUserAnswer("");
-    setScore(0);
-    setIsFeedback("");
-    setIsFinalScore(false);
+    setQuiz({ type: "RESET_QUIZ" });
   };
 
   return (
     <div className="flex h-screen flex-col items-center justify-center">
       <h1 className="mb-4 text-2xl font-bold md:text-3xl">Quiz</h1>
       <p className="mb-4 w-3/4 max-w-md text-lg md:text-xl">
-        {currentQuestion +
+        {quiz.currentQuestion +
           1 +
           "/" +
-          questions.length +
+          quiz.quizQuestions.length +
           ". " +
-          questions[currentQuestion].questionText}
+          quiz.quizQuestions[quiz.currentQuestion].questionText}
       </p>
 
       <div className="flex w-3/4 max-w-md flex-col gap-2">
-        {questions[currentQuestion].answerOptions.map((option, index) => (
-          <label key={index} className="rounded bg-slate-400 p-2">
-            <input
-              type="radio"
-              value={option}
-              name={currentQuestion}
-              required
-              onClick={handleAnswer}
-              className="mr-2 cursor-pointer "
-            ></input>
-            {option}
-          </label>
-        ))}
+        {quiz.quizQuestions[quiz.currentQuestion].answerOptions.map(
+          (option, index) => (
+            <label key={index} className="rounded bg-slate-400 p-2">
+              <input
+                type="radio"
+                value={option}
+                name={quiz.currentQuestion}
+                checked={quiz.userAnswer === option}
+                required
+                onClick={handleAnswer}
+                className="mr-2 cursor-pointer "
+              ></input>
+              {option}
+            </label>
+          ),
+        )}
       </div>
 
-      {isShowFinalScore ? (
+      {quiz.isShowFinalScore ? (
         <button
           className="mt-4 rounded border bg-red-500 px-4 py-2 text-white"
           onClick={handleReset}
@@ -81,17 +78,17 @@ function App() {
       )}
 
       <div className="mt-4 text-lg font-semibold">
-        {isShowFinalScore ? (
+        {quiz.isShowFinalScore ? (
           <p className="text-green-600">
-            The final score is {score} / {questions.length}
+            The final score is {quiz.score} / {quiz.quizQuestions.length}
           </p>
         ) : (
           <p
             className={
-              feedback === "Correct" ? "text-green-600" : "text-red-600"
+              quiz.feedback === "Correct" ? "text-green-600" : "text-red-600"
             }
           >
-            {feedback}
+            {quiz.feedback}
           </p>
         )}
       </div>
