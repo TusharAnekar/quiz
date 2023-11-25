@@ -28,34 +28,71 @@ function App() {
     else setIsFinalScore(true);
   };
 
-  return (
-    <div>
-      <p>{questions[currentQuestion].questionText}</p>
+  const handleReset = () => {
+    setCurrentQuestion(0);
+    setUserAnswer("");
+    setScore(0);
+    setIsFeedback("");
+    setIsFinalScore(false);
+  };
 
-      <div>
+  return (
+    <div className="flex h-screen flex-col items-center justify-center">
+      <h1 className="mb-4 text-2xl font-bold md:text-3xl">Quiz</h1>
+      <p className="mb-4 w-3/4 max-w-md text-lg md:text-xl">
+        {currentQuestion +
+          1 +
+          "/" +
+          questions.length +
+          ". " +
+          questions[currentQuestion].questionText}
+      </p>
+
+      <div className="flex w-3/4 max-w-md flex-col gap-2">
         {questions[currentQuestion].answerOptions.map((option, index) => (
-          <label key={index}>
+          <label key={index} className="rounded bg-slate-400 p-2">
             <input
               type="radio"
               value={option}
               name={currentQuestion}
               required
               onClick={handleAnswer}
+              className="mr-2 cursor-pointer "
             ></input>
             {option}
           </label>
         ))}
       </div>
 
-      <button onClick={handleSubmit}>Submit</button>
+      {isShowFinalScore ? (
+        <button
+          className="mt-4 rounded border bg-red-500 px-4 py-2 text-white"
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+      ) : (
+        <button
+          onClick={handleSubmit}
+          className="mt-4 rounded border bg-blue-500 px-4 py-2 text-white"
+        >
+          Submit
+        </button>
+      )}
 
-      <div>
+      <div className="mt-4 text-lg font-semibold">
         {isShowFinalScore ? (
-          <p>
+          <p className="text-green-600">
             The final score is {score} / {questions.length}
           </p>
         ) : (
-          <p>{feedback}</p>
+          <p
+            className={
+              feedback === "Correct" ? "text-green-600" : "text-red-600"
+            }
+          >
+            {feedback}
+          </p>
         )}
       </div>
     </div>
